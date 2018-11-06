@@ -1,0 +1,112 @@
+---
+title: "assessment"
+output: html_document
+---
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r code}
+
+
+library(tidyverse)
+#LondonData<-read_csv("/Users/WuC/Documents/Assign-part1-Aiden/LondonData.csv",na="n/a")
+#class(LondonData)
+LondonData <- read_csv("https://files.datapress.com/london/dataset/ward-profiles-and-atlas/2015-09-24T14:21:24/ward-profiles-excel-version.csv", na = "n/a")
+datatypelist<-data.frame(cbind(lapply(LondonData,class)))
+#LondonData<-read_csv("/Users/WuC/Documents/Assign-part1-Aiden/LondonData.csv")
+
+
+LondonBoroughs<-LondonData[626:658,]
+LondonData<-data.frame(LondonData)
+#grep (get) me all of the rows from the London Data data frame where the text in column 3 starts with (^) E09
+LondonBoroughs<-LondonData[grep("^E09",LondonData[,3]),]
+#head(LondonBoroughs)
+
+LondonBoroughs<-LondonBoroughs[2:34,]
+LondonBoroughs<-LondonBoroughs[,c(1,19,20,21)]
+#rename the column 1 in LondonBoroughs
+names(LondonBoroughs)[1]<-c("Borough Name")
+
+
+
+#working with Spatial Data
+
+
+
+library(maptools)
+library(RColorBrewer)
+library(classInt)
+library(sp)
+library(rgeos)
+library(tmap)
+library(tmaptools)
+library(sf)
+library(rgdal)
+library(geojsonio)
+
+
+
+#BoroughMapSF <- read_shape("/Users/WuC/Documents/Assign-part1-Aiden/england_lad_2011.shp", as.sf = TRUE)
+BoroughMapSF <- read_shape("C:/Users/Messi-Lu/Desktop/england_lad_2011.shp", as.sf = TRUE)
+library(methods)
+#class(BoroughMapSF)
+#class(BoroughMapSP)
+#newSF <- st_as_sf(BoroughMapSP)
+#newSP <- as(newSF, "Spatial")
+#BoroughMapSP <- as(BoroughMapSF, "Spatial")
+
+
+BoroughDataMap <- append_data(BoroughMapSF,LondonData, key.shp = "code", key.data = "New.code", ignore.duplicates = TRUE)
+
+
+library(tmap)
+library(tmaptools)
+tmap_mode("plot")
+qtm(BoroughDataMap, fill = "Rate.of.JobSeekers.Allowance..JSA..Claimants...2015")
+
+tm_shape(BoroughDataMap) + 
+  tm_polygons("X..Not.Born.in.UK...2011" , 
+              style="jenks",
+              palette="plasma",
+              midpoint=NA) + 
+  tm_compass(position = c("right", "top"),type = "arrow") + 
+  tm_scale_bar(position = c("left", "bottom")) +
+  tm_layout(title = "Not.Born.in.UK.2011", legend.position = c("right", "bottom"))
+```
+Geographic Information Systems and Science - Assessment Part 1
+
+Introduction
+In the world of social science and even in real life, a large amount of data may have a certain paradigm of spatial distribution. In this context, visualizing the combination of data and maps can more intuitively understand the geographical distribution of the data. There are many methods to visualize various data by different techniques. This report introduces the use of ArcGIS and R which we have a comparative study for mapping the characteristics in London, UK.
+
+The Benefits and Drawbacks of GUI and Command Line Generated Maps
+In the practice of data visualizing, the most typical representative in the field of Geographical Information System (GIS) is called ArcGIS. The program of GIS can be simply understood as a database which is capable of geographical referencing. Obviously, as a GUI based software, ArcGIS simultaneously handle the windows, icons, menus and pointing devices, thus forming a full system called desktop. Especially when we are mapping more than one project, the GUI can display different kinds of data information at the same time, so that we can switch in several working environments without losing the connection between several tasks. The GUI based program undoubtedly improves the efficiency of interaction for users who are not skilled at typing. Compared with CLI, the GUI has certain cultural and language independence and can improve to efficiency of visual target search.
+However, most of the situations we discussed above are based on mapping only one project or fewer projects. When we tried to draw the distribution maps for 16 ethnic groups in London by ArcGIS, we felt the inefficiency in the tedious and repetitive mode of operation under the GUI based software. If you are a pragmatic programmer and you are constantly trying to perform special operations (operations that the GUI may not support), the CLI based mapping method may be more suitable for you. The CLI based method for mapping can always surprise you. For instance, we could use the R (CLI based) to indicate the distribution condition for the particular groups of the population from the data pool immediately. We only need to quickly combine some commands to efficiently query and compile the layers to achieve relatively high-level visualization standards. But we must also admit that the learning curve for CLI based mapping method is quite slow.
+
+The Processes for Generating Both Maps
+The map of ethnic group distribution (Figure 1) created by GUI based software (ArcGIS) and it shows the ratio of white to the total population in London. We first find the geographical coordinates of the various boroughs in London. Next, we download the ethnic group data from the Census (England), then calculate the percentage (ratio) through the Excel and import the data to ArcGIS to match each borough (even wards-level area to display more detailed trends) in the map. Finally, each area(wards-level) is given different colors according to the percentage of one particular ethnic group living.
+Comparing with the ArcGISâ€? relatively fixed mapping pattern, R seems like giving us more than one angle to solve the problems. We can just install any packages which you like and use each packageâ€™s unique function to achieve our goals. Figure 2 shows the whole process of our mapping with various functions from different packages which we installed before. Sets of codes can be easily combined together to obtain everything we want (Figure 3).
+
+Conclusion
+GUI environments are often limited by the capabilities that their designers want to provide. Our experience tells us that the main purpose of GIS based software (ArcGIS) is to show data spatially and perform summary analysis (geological statistics) that can only be processed by GIS. CLI based program offers us more efficient working environments with fast and infinite ways to map the projects which we want.
+
+
+
+Figure 1 
+![Caption for the picture.](C:/Users/Messi-Lu/Desktop/Assign-part1-Aiden/GIS- Part1.jpg)
+
+Figure 2
+![Caption for the picture.](C:/Users/Messi-Lu/Desktop/Assign-part1-Aiden/Figure2.png)
+
+Figure 3
+![Caption for the picture.](C:/Users/Messi-Lu/Desktop/Assign-part1-Aiden/WechatIMG318.jpeg)
+
+
+
